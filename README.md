@@ -21,7 +21,7 @@ dockflix -d /path/to/openvpn/dir -c config.ovpn -m --vlc "magnet:?..."
    <!-- -v /path/to/openvpn/config:/etc/openvpn --rm -it --cap-add=NET_ADMIN \ -->
    <!-- tombh/docker-peerflix-vpn -c config.ovpn -m "magnet:..." -->
 
-This will automatically start vlc with the stream. Other options are ``--mpv --mplayer`` or set a custom player cmd with `--player "cmd"`.
+This will automatically start vlc with the stream. Other options are `--mpv --mplayer` or set a custom player cmd with `--player "cmd"`.
 
 See `dockflix --help` for more options
 
