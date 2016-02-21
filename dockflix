@@ -1,0 +1,96 @@
+#!/bin/bash
+
+usage() {
+   cat <<EOM
+$(basename $0) [-n docker_name] [-d /path/to/openvpn] -c your_config.ovpn -m "magnt:...
+--help   -h           Print this Message
+--name   -n           Name of the docker Container, default: tombh/docker-peerflix-vpn
+--dir    -d           Default: /etc/openvpn
+--config -c           Name of the openvpn config file.
+--magnet -m           Magnet link
+--port   -p           The port dockflix will stream the movie: localhost:<port>
+--player -l           Player to be used to autolaunch
+--vlc  --mplayer --smplayer   Sets the player config accordingly
+your defaults can be set in .dockflicrc
+EOM
+   exit 1
+}
+
+term() {
+   echo Terminating
+   pkill $$
+   docker kill $(cat dockflix.cid)
+   docker rm $(cat dockflix.cid)
+   rm dockflix.cid
+   exit 0
+}
+
+trap term INT KILL
+
+# defaults
+OVPNDIR=/etc/openvpn
+DOCKER=tombh/docker-peerflix-vpn
+PORT=8888
+
+RC=$(dirname $0)/.dockflixrc
+[[ -e $RC ]] && source $RC
+
+params=$(getopt -o d:c:m:n:hl: \
+   -l dir:,config:,magnet:,name:,help,vlc,mpalyer,smplayer,player:,dev \
+   --name "$(basename $0)" -- "$@")
+
+if [ $? -ne 0 ]
+then
+    usage
+fi
+
+eval set -- "$params"
+unset params
+
+set -x
+while true
+do
+    case $1 in
+       -d|--dir)    OVPNDIR=$2; shift  ;;
+       -c|--config) OVPN=$2;    shift  ;;
+       -m|--magnet) MAGNET=$2;  shift  ;;
+       -n|--name)   DOCKER=$2;  shift  ;;
+       -p|--port)   PORT=$2;    shift  ;;
+       -l|--player) PLAYER=$2   shift  ;;
+       --vlc)       PLAYER=vlc;         ;;
+       --mplayer)   PLAYER=mplayer;     ;;
+       --smplayer)  PLAYER=smplayer;    ;;
+       --dev) DEV="-v $PWD/init.sh:/usr/bin/init.sh" ;;
+       -h|--help)   usage               ;;
+       --)          shift; break        ;;
+       *)           usage               ;;
+    esac
+    shift
+done
+
+[ -z $OVPN ] && usage
+[ -z $MAGNET ] && usage
+if [ ! -e ${OVPNDIR}/${OVPN} ]; then
+   echo "openvpn config ${OVPNDIR}/${OVPN} couln't be found"
+   usage
+fi
+
+docker run -v $OVPNDIR:/etc/openvpn $DEV       \
+   --cidfile="dockflix.cid" -t --rm            \
+   --cap-add=NET_ADMIN -p 127.0.0.1:$PORT:8888 \
+   $DOCKER -c $OVPN -m $MAGNET                 &
+
+if [ -z $PLAYER ]; then
+   # wait until terminated with ^C
+   while true; do
+      sleep 10000 &
+      wait $!
+   done
+else
+   echo waiting 10 seconds for buffering...
+   sleep 10
+   $PLAYER http://localhost:$PORT
+fi
+set +x
+
+term

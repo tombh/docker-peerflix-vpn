@@ -1,0 +1,16 @@
+#### config file for dockflix in bash syntax
+
+#### the openvpn config dir containing the ovpn file and the needed certificates
+# OVPNDIR=~/.config/openvpn
+
+#### name of the openvpn config to be used
+# OVPN=Netherlands.ovpn
+
+#### the name of the docker container if you build it youself
+# DOCKER=dockflix
+
+#### port on witch dockflix will stream the movie
+# PORT=123
+
+#### player to be used
+# PLAYER="vlc"

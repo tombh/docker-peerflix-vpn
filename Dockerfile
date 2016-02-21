@@ -11,7 +11,9 @@ RUN apk add openvpn
 RUN npm install -g peerflix
 
 # Clean any non essential files to save space
-RUN rm -rf /var/cache/apk/*
+RUN rm -rf /var/cache/apk/* /tmp/*
+
+# EXPOSE 8888
 
 WORKDIR /etc/openvpn
 

@@ -6,10 +6,8 @@ set -e
 OPTIND=1         # Reset in case getopts has been used previously in the shell.
 while getopts "c:m:" opt; do
     case "$opt" in
-    m)  MAGENT=$OPTARG
-        ;;
-    c)  CONFIG=$OPTARG
-        ;;
+    m)  MAGNET=$OPTARG ;;
+    c)  CONFIG=$OPTARG ;;
     esac
 done
 shift $((OPTIND-1))
@@ -20,6 +18,9 @@ if [ ! -c /dev/net/tun ]; then
     mknod /dev/net/tun c 10 200
 fi
 
-openvpn --config $CONFIG --daemon
+openvpn --config $CONFIG --route-delay 0 --daemon 
 
-peerflix $MAGENT
+# wait for routing to be set
+sleep 5
+
+peerflix $MAGNET
