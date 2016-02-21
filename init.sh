@@ -22,7 +22,4 @@ fi
 
 openvpn --config $CONFIG --daemon
 
-# curl jsonip.com
-traceroute www.google.com
-
 peerflix $MAGENT
