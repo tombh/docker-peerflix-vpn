@@ -8,7 +8,7 @@ RUN apk update
 RUN apk add openvpn
 
 # Install Peerflix
-RUN npm install peerflix
+RUN npm install -g peerflix
 
 # Clean any non essential files to save space
 RUN rm -rf /var/cache/apk/*
