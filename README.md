@@ -11,12 +11,10 @@ without the complexity of setting up NodeJS, OpenVPN, split traffic, etc, on you
 
 ## Run
 
-```
-bash
+``` bash
 docker run \
-  --rm \
-  -v path/to/.opvn:/root/config.opvn \
-  tombh/docker-peerflix-vpn 'magnet link or torrent file url'
+   -v /path/to/openvpn/config:/etc/openvpn --rm -it --cap-add=NET_ADMIN \
+   peerflix -c config.ovpn -m "magnet:..."
 ```
 
 Then goto http://172.17.0.2:8888 in your browser to view the video stream.
