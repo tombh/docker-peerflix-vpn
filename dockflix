@@ -36,7 +36,7 @@ RC=$(dirname $0)/.dockflixrc
 [[ -e $RC ]] && source $RC
 
 params=$(getopt -o d:c:m:n:hl: \
-   -l dir:,config:,magnet:,name:,help,vlc,mpalyer,smplayer,player:,dev \
+   -l dir:,config:,magnet:,name:,help,vlc,mpalyer,mpv,player:,dev \
    --name "$(basename $0)" -- "$@")
 
 if [ $? -ne 0 ]
@@ -47,19 +47,18 @@ fi
 eval set -- "$params"
 unset params
 
-set -x
 while true
 do
     case $1 in
-       -d|--dir)    OVPNDIR=$2; shift  ;;
-       -c|--config) OVPN=$2;    shift  ;;
-       -m|--magnet) MAGNET=$2;  shift  ;;
-       -n|--name)   DOCKER=$2;  shift  ;;
-       -p|--port)   PORT=$2;    shift  ;;
-       -l|--player) PLAYER=$2   shift  ;;
+       -d|--dir)    OVPNDIR=$2; shift   ;;
+       -c|--config) OVPN=$2;    shift   ;;
+       -m|--magnet) MAGNET=$2;  shift   ;;
+       -n|--name)   DOCKER=$2;  shift   ;;
+       -p|--port)   PORT=$2;    shift   ;;
+       -l|--player) PLAYER=$2;  shift   ;;
        --vlc)       PLAYER=vlc;         ;;
        --mplayer)   PLAYER=mplayer;     ;;
-       --smplayer)  PLAYER=smplayer;    ;;
+       --mpv)       PLAYER=mpv;         ;;
        --dev) DEV="-v $PWD/init.sh:/usr/bin/init.sh" ;;
        -h|--help)   usage               ;;
        --)          shift; break        ;;
@@ -72,25 +71,26 @@ done
 [ -z $MAGNET ] && usage
 if [ ! -e ${OVPNDIR}/${OVPN} ]; then
    echo "openvpn config ${OVPNDIR}/${OVPN} couln't be found"
-   usage
+   exit 1
 fi
 
+# set -x
 docker run -v $OVPNDIR:/etc/openvpn $DEV       \
    --cidfile="dockflix.cid" -t --rm            \
    --cap-add=NET_ADMIN -p 127.0.0.1:$PORT:8888 \
    $DOCKER -c $OVPN -m $MAGNET                 &
 
-if [ -z $PLAYER ]; then
-   # wait until terminated with ^C
-   while true; do
-      sleep 10000 &
-      wait $!
-   done
-else
-   echo waiting 10 seconds for buffering...
+if [[ "" != "$PLAYER" ]]; then
+   echo buffering... waiting 10 seconds
    sleep 10
    $PLAYER http://localhost:$PORT
 fi
-set +x
+
+# wait until terminated with ^C
+while true; do
+   sleep 10000 &
+   wait $!
+   echo waited
+done
 
 term
