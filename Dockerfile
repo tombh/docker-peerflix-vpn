@@ -6,12 +6,15 @@ RUN apk update
 
 # Install OpenVPN
 RUN apk add openvpn
+# bash
 
 # Install Peerflix
 RUN npm install peerflix
 
 # Clean any non essential files to save space
 RUN rm -rf /var/cache/apk/*
+
+WORKDIR /etc/openvpn
 
 COPY init.sh /usr/bin
 

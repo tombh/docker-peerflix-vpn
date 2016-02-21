@@ -1,13 +1,28 @@
-#!/usr/bin/env sh
+#!/bin/sh
 
 # Fail the entire script if any command fails
 set -e
 
-if [ $# -eq 0 ]; then
-  echo "No arguments supplied"
-  exit 1
+OPTIND=1         # Reset in case getopts has been used previously in the shell.
+while getopts "c:m:" opt; do
+    case "$opt" in
+    m)  MAGENT=$OPTARG
+        ;;
+    c)  CONFIG=$OPTARG
+        ;;
+    esac
+done
+shift $((OPTIND-1))
+# [ "$1" = "--" ] && shift
+
+mkdir -p /dev/net
+if [ ! -c /dev/net/tun ]; then
+    mknod /dev/net/tun c 10 200
 fi
 
-openvpn /root/config.opvn
+openvpn --config $CONFIG --daemon
 
-peerflix $1
+# curl jsonip.com
+traceroute www.google.com
+
+peerflix $MAGENT

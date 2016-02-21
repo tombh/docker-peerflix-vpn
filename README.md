@@ -4,7 +4,9 @@
 `docker pull tombh/docker-peerflix-vpn`
 
 ## Run
-```bash
+
+```
+bash
 docker run \
   -v path/to/.opvn:/root/config.opvn \
   --rm \
